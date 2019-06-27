@@ -119,3 +119,30 @@ def test_read_gmt():
     assert read_gene_sets.var.columns == expected_gene_sets.var.columns
     assert (read_gene_sets.var == expected_gene_sets.var).all().all()
     assert (read_gene_sets.X == expected_gene_sets.X).all()
+
+def test_read_grp():
+    read_gene_set = wot.io.read_grp("test/resources/small_gene_set_1.grp")
+    obs = pd.DataFrame(index = [ 'gene_1' ])
+    var = pd.DataFrame(index = [ 'small_gene_set_1' ])
+    x = np.array([ [ 1 ] ])
+    expected_gene_set = anndata.AnnData(X=x, obs=obs, var=var)
+    assert isinstance(read_gene_set, anndata.AnnData)
+    assert len(read_gene_set.obs.columns) == 0
+    assert (read_gene_set.obs == expected_gene_set.obs).all().all()
+    assert len(read_gene_set.var.columns) == 0
+    assert (read_gene_set.var == expected_gene_set.var).all().all()
+    assert (read_gene_set.X == expected_gene_set.X).all()
+
+def test_read_grp_with_feature_ids():
+    read_gene_set = wot.io.read_grp("test/resources/small_gene_set_1.grp",
+            feature_ids = [ 'gene_1', 'gene_2' ])
+    obs = pd.DataFrame(index = [ 'gene_1', 'gene_2' ])
+    var = pd.DataFrame(index = [ 'small_gene_set_1' ])
+    x = np.array([ [ 1 ], [ 0 ] ])
+    expected_gene_set = anndata.AnnData(X=x, obs=obs, var=var)
+    assert isinstance(read_gene_set, anndata.AnnData)
+    assert len(read_gene_set.obs.columns) == 0
+    assert (read_gene_set.obs == expected_gene_set.obs).all().all()
+    assert len(read_gene_set.var.columns) == 0
+    assert (read_gene_set.var == expected_gene_set.var).all().all()
+    assert (read_gene_set.X == expected_gene_set.X).all()
