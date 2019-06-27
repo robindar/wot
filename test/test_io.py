@@ -17,6 +17,15 @@ def sample_dataset():
     ds = anndata.AnnData(X=x, obs=obs, var=var)
     return ds
 
+def sample_gene_sets():
+    obs = pd.DataFrame(index = [ 'gene_1', 'gene_2' ])
+    var = pd.DataFrame([ 'just a cell set', 'and another', 'and a last one' ],
+            index = [ 'set_1', 'set_2', 'set_3' ],
+            columns = [ 'description' ])
+    x = np.array([ [ 1, 1, 1 ], [ 0, 1, 1 ] ])
+    ds = anndata.AnnData(X=x, obs=obs, var=var)
+    return ds
+
 # Tests
 
 def test_read_day_pairs_from_file():
@@ -90,3 +99,23 @@ def test_check_file_extension():
             ]
     for filename, extension, result in test_cases:
         assert wot.io.check_file_extension(filename, extension) == result
+
+def test_read_gmx():
+    read_gene_sets = wot.io.read_gmx("test/resources/small_gene_sets.gmx")
+    expected_gene_sets = sample_gene_sets()
+    assert isinstance(read_gene_sets, anndata.AnnData)
+    assert len(read_gene_sets.obs.columns) == 0
+    assert (read_gene_sets.obs == expected_gene_sets.obs).all().all()
+    assert read_gene_sets.var.columns == expected_gene_sets.var.columns
+    assert (read_gene_sets.var == expected_gene_sets.var).all().all()
+    assert (read_gene_sets.X == expected_gene_sets.X).all()
+
+def test_read_gmt():
+    read_gene_sets = wot.io.read_gmt("test/resources/small_gene_sets.gmt")
+    expected_gene_sets = sample_gene_sets()
+    assert isinstance(read_gene_sets, anndata.AnnData)
+    assert len(read_gene_sets.obs.columns) == 0
+    assert (read_gene_sets.obs == expected_gene_sets.obs).all().all()
+    assert read_gene_sets.var.columns == expected_gene_sets.var.columns
+    assert (read_gene_sets.var == expected_gene_sets.var).all().all()
+    assert (read_gene_sets.X == expected_gene_sets.X).all()

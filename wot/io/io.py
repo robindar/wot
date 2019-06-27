@@ -310,8 +310,8 @@ def read_gmt(path, feature_ids=None):
 
 def read_gmx(path, feature_ids=None):
     with open(path) as fp:
-        set_ids = fp.readline().split('\t')
-        descriptions = fp.readline().split('\t')
+        set_ids = fp.readline().rstrip().split('\t')
+        descriptions = fp.readline().rstrip().split('\t')
         nsets = len(set_ids)
         for i in range(len(set_ids)):
             set_ids[i] = set_ids[i].rstrip()
