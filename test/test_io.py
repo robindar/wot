@@ -176,3 +176,33 @@ def test_read_grp_with_feature_ids():
     x = np.array([ [ 1 ], [ 0 ] ])
     expected_gene_set = anndata.AnnData(X=x, obs=obs, var=var)
     assert_anndata_equal(read_gene_set, expected_gene_set)
+
+def test_read_sets_grp():
+    read_gene_set = wot.io.read_sets("test/resources/small_gene_set_1.grp")
+    obs = pd.DataFrame(index = [ 'gene_1' ])
+    var = pd.DataFrame(index = [ 'small_gene_set_1' ])
+    x = np.array([ [ 1 ] ])
+    expected_gene_set = anndata.AnnData(X=x, obs=obs, var=var)
+    assert_anndata_equal(read_gene_set, expected_gene_set)
+
+def test_read_sets_grp_with_feature_ids():
+    read_gene_set = wot.io.read_sets("test/resources/small_gene_set_1.grp",
+            feature_ids = [ 'gene_1', 'gene_2' ])
+    obs = pd.DataFrame(index = [ 'gene_1', 'gene_2' ])
+    var = pd.DataFrame(index = [ 'small_gene_set_1' ])
+    x = np.array([ [ 1 ], [ 0 ] ])
+    expected_gene_set = anndata.AnnData(X=x, obs=obs, var=var)
+    assert_anndata_equal(read_gene_set, expected_gene_set)
+
+def test_read_sets_gmt_gmx():
+    for ext in [ "gmt", "gmx" ]:
+        read_gene_sets = wot.io.read_sets("test/resources/small_gene_sets." + ext)
+        expected_gene_sets = sample_gene_sets()
+        assert_anndata_equal(read_gene_sets, expected_gene_sets)
+
+def test_read_sets_gmt_gmx_with_feature_ids():
+    for ext in [ "gmt", "gmx" ]:
+        read_gene_sets = wot.io.read_sets("test/resources/small_gene_sets." + ext,
+                feature_ids = [ 'gene_1', 'gene_2', 'gene_3', 'gene_4' ])
+        expected_gene_sets = sample_extended_gene_sets()
+        assert_anndata_equal(read_gene_sets, expected_gene_sets)
