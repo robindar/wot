@@ -4,6 +4,41 @@ import anndata
 import pytest
 import wot.io
 
+# Testing helpers
+
+def assert_np_array_equal(result, expected):
+    assert isinstance(result, np.ndarray)
+    assert isinstance(expected, np.ndarray)
+    assert result.ndim == expected.ndim
+    assert result.shape == expected.shape
+    assert (result == expected).all()
+
+def assert_pd_frame_equal(result, expected):
+    assert isinstance(result, pd.DataFrame)
+    assert isinstance(expected, pd.DataFrame)
+    assert len(result.columns) == len(expected.columns)
+    if len(expected.columns) != 0:
+        assert (result.columns == expected.columns).all()
+    assert len(result.index) == len(expected.index)
+    if len(expected.index) != 0:
+        assert (result.index == expected.index).all()
+    assert (result == expected).all().all()
+
+def assert_anndata_equal(result, expected):
+    assert isinstance(result, anndata.AnnData)
+    assert isinstance(expected, anndata.AnnData)
+    assert_pd_frame_equal(result.obs, expected.obs)
+    assert_pd_frame_equal(result.var, expected.var)
+    if type(result.X) == np.float32 or type(expected.X) == np.float32:
+        if type(expected.X) == np.float32 and type(expected.X) == np.float32:
+            assert result.X == expected.X
+        else:
+            assert (result.X == expected.X).all()
+    elif type(result.X) == np.ndarray and type(expected.X) == np.ndarray:
+        assert_np_array_equal(result.X, expected.X)
+    else:
+        print(f"ERROR: unsupported comparison between anndata.X types {type(result.X)} and {type(expected.X)}")
+
 # Sample data generation
 
 def sample_day_pairs():
@@ -40,17 +75,13 @@ def sample_extended_gene_sets():
 def test_read_day_pairs_from_file():
     expected_pairs = sample_day_pairs()
     read_pairs = wot.io.read_day_pairs("test/resources/day_pairs_example.txt")
-    assert isinstance(read_pairs, pd.DataFrame)
-    assert (read_pairs.columns == expected_pairs.columns).all()
-    assert (read_pairs == expected_pairs).all().all()
+    assert_pd_frame_equal(read_pairs, expected_pairs)
 
 def test_read_day_pairs_from_string():
     pairs_string = "t0,t1,lambda1;0,1,50;1,2,80;2,4,30;4,5,10"
     expected_pairs = sample_day_pairs()
     read_pairs = wot.io.read_day_pairs(pairs_string)
-    assert isinstance(read_pairs, pd.DataFrame)
-    assert (read_pairs.columns == expected_pairs.columns).all()
-    assert (read_pairs == expected_pairs).all().all()
+    assert_pd_frame_equal(read_pairs, expected_pairs)
 
 def test_row_metadata_completion_errors():
     dataset = sample_dataset()
@@ -74,9 +105,7 @@ def test_row_metadata_completion():
             growth_rates="test/resources/small_growth_rates.txt",
             covariate="test/resources/small_covariate.txt")
     computed_obs = dataset.obs
-    assert isinstance(computed_obs, pd.DataFrame)
-    assert (computed_obs.columns == expected_obs.columns).all()
-    assert (computed_obs == expected_obs).all().all()
+    assert_pd_frame_equal(computed_obs, expected_obs)
 
 def test_get_filename_and_extension():
     test_cases = [
@@ -112,44 +141,24 @@ def test_check_file_extension():
 def test_read_gmx():
     read_gene_sets = wot.io.read_gmx("test/resources/small_gene_sets.gmx")
     expected_gene_sets = sample_gene_sets()
-    assert isinstance(read_gene_sets, anndata.AnnData)
-    assert len(read_gene_sets.obs.columns) == 0
-    assert (read_gene_sets.obs == expected_gene_sets.obs).all().all()
-    assert read_gene_sets.var.columns == expected_gene_sets.var.columns
-    assert (read_gene_sets.var == expected_gene_sets.var).all().all()
-    assert (read_gene_sets.X == expected_gene_sets.X).all()
+    assert_anndata_equal(read_gene_sets, expected_gene_sets)
 
 def test_read_gmx_with_feature_ids():
     read_gene_sets = wot.io.read_gmx("test/resources/small_gene_sets.gmx",
             feature_ids = [ 'gene_1', 'gene_2', 'gene_3', 'gene_4' ])
     expected_gene_sets = sample_extended_gene_sets()
-    assert isinstance(read_gene_sets, anndata.AnnData)
-    assert len(read_gene_sets.obs.columns) == 0
-    assert (read_gene_sets.obs == expected_gene_sets.obs).all().all()
-    assert read_gene_sets.var.columns == expected_gene_sets.var.columns
-    assert (read_gene_sets.var == expected_gene_sets.var).all().all()
-    assert (read_gene_sets.X == expected_gene_sets.X).all()
+    assert_anndata_equal(read_gene_sets, expected_gene_sets)
 
 def test_read_gmt():
     read_gene_sets = wot.io.read_gmt("test/resources/small_gene_sets.gmt")
     expected_gene_sets = sample_gene_sets()
-    assert isinstance(read_gene_sets, anndata.AnnData)
-    assert len(read_gene_sets.obs.columns) == 0
-    assert (read_gene_sets.obs == expected_gene_sets.obs).all().all()
-    assert read_gene_sets.var.columns == expected_gene_sets.var.columns
-    assert (read_gene_sets.var == expected_gene_sets.var).all().all()
-    assert (read_gene_sets.X == expected_gene_sets.X).all()
+    assert_anndata_equal(read_gene_sets, expected_gene_sets)
 
 def test_read_gmt_with_feature_ids():
     read_gene_sets = wot.io.read_gmt("test/resources/small_gene_sets.gmt",
             feature_ids = [ 'gene_1', 'gene_2', 'gene_3', 'gene_4' ])
     expected_gene_sets = sample_extended_gene_sets()
-    assert isinstance(read_gene_sets, anndata.AnnData)
-    assert len(read_gene_sets.obs.columns) == 0
-    assert (read_gene_sets.obs == expected_gene_sets.obs).all().all()
-    assert read_gene_sets.var.columns == expected_gene_sets.var.columns
-    assert (read_gene_sets.var == expected_gene_sets.var).all().all()
-    assert (read_gene_sets.X == expected_gene_sets.X).all()
+    assert_anndata_equal(read_gene_sets, expected_gene_sets)
 
 def test_read_grp():
     read_gene_set = wot.io.read_grp("test/resources/small_gene_set_1.grp")
@@ -157,12 +166,7 @@ def test_read_grp():
     var = pd.DataFrame(index = [ 'small_gene_set_1' ])
     x = np.array([ [ 1 ] ])
     expected_gene_set = anndata.AnnData(X=x, obs=obs, var=var)
-    assert isinstance(read_gene_set, anndata.AnnData)
-    assert len(read_gene_set.obs.columns) == 0
-    assert (read_gene_set.obs == expected_gene_set.obs).all().all()
-    assert len(read_gene_set.var.columns) == 0
-    assert (read_gene_set.var == expected_gene_set.var).all().all()
-    assert (read_gene_set.X == expected_gene_set.X).all()
+    assert_anndata_equal(read_gene_set, expected_gene_set)
 
 def test_read_grp_with_feature_ids():
     read_gene_set = wot.io.read_grp("test/resources/small_gene_set_1.grp",
@@ -171,9 +175,4 @@ def test_read_grp_with_feature_ids():
     var = pd.DataFrame(index = [ 'small_gene_set_1' ])
     x = np.array([ [ 1 ], [ 0 ] ])
     expected_gene_set = anndata.AnnData(X=x, obs=obs, var=var)
-    assert isinstance(read_gene_set, anndata.AnnData)
-    assert len(read_gene_set.obs.columns) == 0
-    assert (read_gene_set.obs == expected_gene_set.obs).all().all()
-    assert len(read_gene_set.var.columns) == 0
-    assert (read_gene_set.var == expected_gene_set.var).all().all()
-    assert (read_gene_set.X == expected_gene_set.X).all()
+    assert_anndata_equal(read_gene_set, expected_gene_set)
