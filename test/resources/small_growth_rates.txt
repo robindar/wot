@@ -1,3 +1,0 @@
-id	cell_growth_rate
-cell_1	2.
-cell_2	3.

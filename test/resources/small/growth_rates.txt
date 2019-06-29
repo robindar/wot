@@ -1,0 +1,6 @@
+id	cell_growth_rate
+cell_1	1.
+cell_2	2.
+cell_3	1.
+cell_4	2.
+cell_5	1.

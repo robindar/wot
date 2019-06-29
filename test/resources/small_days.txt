@@ -1,3 +1,0 @@
-id	day
-cell_1	1
-cell_2	2

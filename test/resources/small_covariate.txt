@@ -1,3 +1,0 @@
-id	covariate
-cell_1	1
-cell_2	0

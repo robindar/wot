@@ -1,0 +1,6 @@
+id	covariate
+cell_1	1
+cell_2	1
+cell_3	0
+cell_4	0
+cell_5	1
