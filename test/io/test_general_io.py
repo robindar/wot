@@ -1,10 +1,7 @@
 from .io_test_helpers import *
+from .hardcoded_small import *
 
 # Sample data generation
-
-def sample_day_pairs():
-    data = [ [ 0, 1, 50 ], [ 1, 2, 80 ], [ 2, 4, 30 ], [ 4, 5, 10 ] ]
-    return pd.DataFrame(data, columns=[ "t0", "t1", "lambda1" ])
 
 def sample_dataset():
     x = np.array([ [ 1, 2, 3, 0 ], [ 4, 5, 6, 0 ] ])
@@ -16,13 +13,13 @@ def sample_dataset():
 # Tests
 
 def test_read_day_pairs_from_file():
-    expected_pairs = sample_day_pairs()
-    read_pairs = wot.io.read_day_pairs("test/resources/day_pairs_example.txt")
+    expected_pairs = hardcoded_small_day_pairs()
+    read_pairs = wot.io.read_day_pairs("test/resources/small/day_pairs.txt")
     assert_pd_frame_equal(read_pairs, expected_pairs)
 
 def test_read_day_pairs_from_string():
-    pairs_string = "t0,t1,lambda1;0,1,50;1,2,80;2,4,30;4,5,10"
-    expected_pairs = sample_day_pairs()
+    pairs_string = "t0,t1,lambda1;1,2,50;2,3,80;1,3,10"
+    expected_pairs = hardcoded_small_day_pairs()
     read_pairs = wot.io.read_day_pairs(pairs_string)
     assert_pd_frame_equal(read_pairs, expected_pairs)
 
