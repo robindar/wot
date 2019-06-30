@@ -65,3 +65,24 @@ def test_check_file_extension():
             ]
     for filename, extension, result in test_cases:
         assert wot.io.check_file_extension(filename, extension) == result
+
+def test_group_cell_set_single_path():
+    cell_set_path = "test/resources/small/cell_sets/cell_sets_1_2.gmt"
+    dataset = hardcoded_small_ds()
+    wot.io.add_row_metadata_to_dataset(dataset,
+            days="test/resources/small/days.txt")
+    result = wot.io.group_cell_sets(cell_set_path, dataset.obs)
+    expected = hardcoded_small_grouped_cell_sets_1_2()
+    assert result == expected
+
+def test_group_cell_set_multiple_paths():
+    cell_set_paths = [
+            "test/resources/small/cell_sets/cell_sets_1_2.gmt",
+            "test/resources/small/cell_sets/cell_sets_3.gmt",
+            ]
+    dataset = hardcoded_small_ds()
+    wot.io.add_row_metadata_to_dataset(dataset,
+            days="test/resources/small/days.txt")
+    result = wot.io.group_cell_sets(cell_set_paths, dataset.obs)
+    expected = hardcoded_small_grouped_cell_sets_all()
+    assert result == expected

@@ -72,3 +72,27 @@ def hardcoded_small_gene_set_1_semiextended():
     var = pd.DataFrame(index = [ 'set_1' ])
     x = np.array([ [ 1 ], [ 0 ], [ 1 ], [ 0 ] ])
     return anndata.AnnData(X=x, obs=obs, var=var)
+
+def hardcoded_small_grouped_cell_sets_1_2():
+    return {
+            1.0: [
+                { 'name': 'cell_set_1_1.0', 'set': { 'cell_1' } },
+                { 'name': 'cell_set_2_1.0', 'set': { 'cell_5' } },
+                ],
+            2.0: [
+                { 'name': 'cell_set_1_2.0', 'set': { 'cell_2' } },
+                ],
+            }
+
+def hardcoded_small_grouped_cell_sets_all():
+    return {
+            1.0: [
+                { 'name': 'cell_set_1_1.0', 'set': { 'cell_1' } },
+                { 'name': 'cell_set_2_1.0', 'set': { 'cell_5' } },
+                { 'name': 'cell_set_3_1.0', 'set': { 'cell_3' } },
+                ],
+            2.0: [
+                { 'name': 'cell_set_1_2.0', 'set': { 'cell_2' } },
+                { 'name': 'cell_set_3_2.0', 'set': { 'cell_4' } },
+                ],
+            }
