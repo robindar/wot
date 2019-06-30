@@ -209,153 +209,74 @@ def read_sets(path, feature_ids=None, as_dict=False):
 
 
 def read_grp(path, feature_ids=None):
+    elements = []
     with open(path) as fp:
-        row_id_lc_to_index = {}
-        row_id_lc_to_row_id = {}
-        if feature_ids is not None:
-            for i in range(len(feature_ids)):
-                fid = feature_ids[i].lower()
-                row_id_lc_to_index[fid] = i
-                row_id_lc_to_row_id[fid] = feature_ids[i]
-
-        ids_in_set = set()
         for line in fp:
+            line = line.strip()
             if line == '' or line[0] == '#' or line[0] == '>':
                 continue
-            value = line.strip()
-            if value != '':
-                value_lc = value.lower()
-                row_index = row_id_lc_to_index.get(value_lc)
-                if feature_ids is None:
-                    if row_index is None:
-                        row_id_lc_to_row_id[value_lc] = value
-                        row_index = len(row_id_lc_to_index)
-                        row_id_lc_to_index[value_lc] = row_index
-
-                if row_index is not None:
-                    ids_in_set.add(value)
-
-        if feature_ids is None:
-            feature_ids = np.empty(len(row_id_lc_to_index), dtype='object')
-            for rid_lc in row_id_lc_to_index:
-                feature_ids[row_id_lc_to_index[rid_lc]] = row_id_lc_to_row_id[rid_lc]
-
-        x = np.zeros(shape=(len(feature_ids), 1), dtype=np.int8)
-        for id in ids_in_set:
-            row_index = row_id_lc_to_index.get(id.lower())
-            x[row_index, 0] = 1
-
-        obs = pd.DataFrame(index=feature_ids)
-        var = pd.DataFrame(index=[wot.io.get_filename_and_extension(os.path.basename(path))[0]])
-        return anndata.AnnData(X=x, obs=obs, var=var)
-
+            elements.append(line.lower())
+    if feature_ids is None:
+        feature_ids = list(sorted(elements))
+    x = np.zeros((len(feature_ids), 1), dtype=np.int8)
+    for i in range(len(feature_ids)):
+        if feature_ids[i] in elements:
+            x[i, 0] = 1
+    set_name, _ = get_filename_and_extension(os.path.basename(path))
+    obs = pd.DataFrame(index = feature_ids)
+    var = pd.DataFrame(index = [ set_name ])
+    return anndata.AnnData(X=x, obs=obs, var=var)
 
 def read_gmt(path, feature_ids=None):
+    names, descriptions, data = [], [], []
     with open(path) as fp:
-        row_id_lc_to_index = {}
-        row_id_lc_to_row_id = {}
-        if feature_ids is not None:
-            for i in range(len(feature_ids)):
-                fid = feature_ids[i].lower()
-                row_id_lc_to_index[fid] = i
-                row_id_lc_to_row_id[fid] = feature_ids[i]
-
-        members_array = []
-        set_descriptions = []
-        set_names = []
         for line in fp:
-            if line == '' or line[0] == '#':
+            line = line.strip()
+            if line == '' or line[0] == '#' or line[0] == '>':
                 continue
             tokens = line.split('\t')
-            if len(tokens) < 3:
+            if len(tokens) < 2:
+                # line needs both name and description tokens
                 continue
-            set_names.append(tokens[0].strip())
-            description = tokens[1].strip()
-            if 'BLANK' == description:
+            name, description, *elements = tokens
+            if description == 'BLANK':
                 description = ''
-            set_descriptions.append(description)
-            ids = tokens[2:]
-            ids_in_set = []
-            members_array.append(ids_in_set)
-            for i in range(len(ids)):
-                value = ids[i].strip()
-                if value != '':
-                    value_lc = value.lower()
-                    row_index = row_id_lc_to_index.get(value_lc)
-                    if feature_ids is None:
-                        if row_index is None:
-                            row_id_lc_to_row_id[value_lc] = value
-                            row_index = len(row_id_lc_to_index)
-                            row_id_lc_to_index[value_lc] = row_index
-
-                    if row_index is not None:
-                        ids_in_set.append(value)
-
-        if feature_ids is None:
-            feature_ids = np.empty(len(row_id_lc_to_index), dtype='object')
-            for rid_lc in row_id_lc_to_index:
-                feature_ids[row_id_lc_to_index[rid_lc]] = row_id_lc_to_row_id[rid_lc]
-
-        x = np.zeros(shape=(len(feature_ids), len(set_names)), dtype=np.int8)
-        for j in range(len(members_array)):
-            ids = members_array[j]
-            for id in ids:
-                row_index = row_id_lc_to_index.get(id.lower())
-                x[row_index, j] = 1
-
-        obs = pd.DataFrame(index=feature_ids)
-        var = pd.DataFrame(data={'description': set_descriptions}, index=set_names)
-        return anndata.AnnData(X=x, obs=obs, var=var)
+            elements = [ el.strip().lower() for el in elements ]
+            names.append(name)
+            descriptions.append(description)
+            data.append(elements)
+    if feature_ids is None:
+        features = set( e for elements in data for e in elements )
+        feature_ids = list(sorted(features))
+    index_of_feature = dict([ [ f, idx ] for idx, f in enumerate(feature_ids) ])
+    x = np.zeros((len(feature_ids), len(names)), dtype=np.int8)
+    for i, elements in enumerate(data):
+        for feature in elements:
+            x[index_of_feature[feature], i] = 1
+    obs = pd.DataFrame(index = feature_ids)
+    var = pd.DataFrame(data = { 'description': descriptions }, index = names)
+    return anndata.AnnData(X=x, obs=obs, var=var)
 
 
 def read_gmx(path, feature_ids=None):
     with open(path) as fp:
-        set_ids = fp.readline().rstrip().split('\t')
+        names = fp.readline().rstrip().split('\t')
+        names = [ name.rstrip() for name in names ]
         descriptions = fp.readline().rstrip().split('\t')
-        nsets = len(set_ids)
-        for i in range(len(set_ids)):
-            set_ids[i] = set_ids[i].rstrip()
-
-        row_id_lc_to_index = {}
-        row_id_lc_to_row_id = {}
-        x = None
-        array_of_arrays = None
-        if feature_ids is not None:
-            for i in range(len(feature_ids)):
-                fid = feature_ids[i].lower()
-                row_id_lc_to_index[fid] = i
-                row_id_lc_to_row_id[fid] = feature_ids[i]
-            x = np.zeros(shape=(len(feature_ids), nsets), dtype=np.int8)
-        else:
-            array_of_arrays = []
-        for line in fp:
-            tokens = line.split('\t')
-            for j in range(nsets):
-                value = tokens[j].strip()
-                if value != '':
-                    value_lc = value.lower()
-                    row_index = row_id_lc_to_index.get(value_lc)
-                    if feature_ids is None:
-                        if row_index is None:
-                            row_id_lc_to_row_id[value_lc] = value
-                            row_index = len(row_id_lc_to_index)
-                            row_id_lc_to_index[value_lc] = row_index
-                            array_of_arrays.append(np.zeros(shape=(nsets,), dtype=np.int8))
-                        array_of_arrays[row_index][j] = 1
-                    elif row_index is not None:
-                        x[row_index, j] = 1
-        if feature_ids is None:
-            feature_ids = np.empty(len(row_id_lc_to_index), dtype='object')
-            for rid_lc in row_id_lc_to_index:
-                feature_ids[row_id_lc_to_index[rid_lc]] = row_id_lc_to_row_id[rid_lc]
-
-        if array_of_arrays is not None:
-            x = np.array(array_of_arrays)
-        obs = pd.DataFrame(index=feature_ids)
-        var = pd.DataFrame(data={'description': descriptions},
-                           index=set_ids)
-        return anndata.AnnData(x, obs=obs, var=var)
-
+        data = [ line.rstrip().split('\t') for line in fp ]
+    if feature_ids is None:
+        features = set( e for element_row in data for e in element_row if e != '')
+        feature_ids = list(sorted(features))
+    index_of_feature = dict([ [ f, idx ] for idx, f in enumerate(feature_ids) ])
+    x = np.zeros((len(feature_ids), len(names)), dtype=np.int8)
+    for element_row in data:
+        for i, feature in enumerate(element_row):
+            if feature == '':
+                continue
+            x[index_of_feature[feature], i] = 1
+    obs = pd.DataFrame(index = feature_ids)
+    var = pd.DataFrame(data = { 'description': descriptions }, index = names)
+    return anndata.AnnData(X=x, obs=obs, var=var)
 
 def write_sets(sets, path):
     """
