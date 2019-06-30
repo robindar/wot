@@ -52,6 +52,15 @@ def hardcoded_small_gene_sets_extended():
     ds = anndata.AnnData(X=x, obs=obs, var=var)
     return ds
 
+def hardcoded_small_gene_sets_filtered():
+    obs = pd.DataFrame(index = [ 'gene_1', 'gene_2', 'gene_3', 'gene_4' ])
+    var = pd.DataFrame([ 'just a cell set', 'and another' ],
+            index = [ 'set_1', 'set_2' ],
+            columns = [ 'description' ])
+    x = np.array([ [ 1, 1 ], [ 0, 1 ], [ 1, 0 ], [ 0, 1 ] ])
+    ds = anndata.AnnData(X=x, obs=obs, var=var)
+    return ds
+
 def hardcoded_small_gene_set_1():
     obs = pd.DataFrame(index = [ 'gene_1', 'gene_3' ])
     var = pd.DataFrame(index = [ 'set_1' ])

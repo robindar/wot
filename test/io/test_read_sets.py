@@ -58,3 +58,10 @@ def test_read_sets_gmt_gmx_with_feature_ids():
                 feature_ids = [ 'gene_1', 'gene_2', 'gene_3', 'gene_4', 'gene_5' ])
         expected_gene_sets = hardcoded_small_gene_sets_extended()
         assert_anndata_equal(read_gene_sets, expected_gene_sets)
+
+def test_read_sets_with_hash():
+    """read_sets should restrict columns to those coming after the hash"""
+    path = "test/resources/small/gene_sets/gene_sets.gmt#set_1,set_2"
+    read_gene_sets = wot.io.read_sets(path)
+    expected_gene_sets = hardcoded_small_gene_sets_filtered()
+    assert_anndata_equal(read_gene_sets, expected_gene_sets)
