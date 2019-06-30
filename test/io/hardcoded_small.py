@@ -33,3 +33,33 @@ def hardcoded_small_ds_with_metadata():
     var = pd.DataFrame(index = [ 'gene_1', 'gene_2', 'gene_3', 'gene_4' ])
     ds = anndata.AnnData(X=x, obs=obs, var=var)
     return ds
+
+def hardcoded_small_gene_sets():
+    obs = pd.DataFrame(index = [ 'gene_1', 'gene_2', 'gene_3', 'gene_4' ])
+    var = pd.DataFrame([ 'just a cell set', 'and another', 'and a last one' ],
+            index = [ 'set_1', 'set_2', 'set_3' ],
+            columns = [ 'description' ])
+    x = np.array([ [ 1, 1, 1 ], [ 0, 1, 1 ], [ 1, 0, 0 ], [ 0, 1, 0 ] ])
+    ds = anndata.AnnData(X=x, obs=obs, var=var)
+    return ds
+
+def hardcoded_small_gene_sets_extended():
+    obs = pd.DataFrame(index = [ 'gene_1', 'gene_2', 'gene_3', 'gene_4', 'gene_5' ])
+    var = pd.DataFrame([ 'just a cell set', 'and another', 'and a last one' ],
+            index = [ 'set_1', 'set_2', 'set_3' ],
+            columns = [ 'description' ])
+    x = np.array([ [ 1, 1, 1 ], [ 0, 1, 1 ], [ 1, 0, 0 ], [ 0, 1, 0 ], [ 0, 0, 0 ] ])
+    ds = anndata.AnnData(X=x, obs=obs, var=var)
+    return ds
+
+def hardcoded_small_gene_set_1():
+    obs = pd.DataFrame(index = [ 'gene_1', 'gene_3' ])
+    var = pd.DataFrame(index = [ 'set_1' ])
+    x = np.array([ [ 1 ], [ 1 ] ])
+    return anndata.AnnData(X=x, obs=obs, var=var)
+
+def hardcoded_small_gene_set_1_semiextended():
+    obs = pd.DataFrame(index = [ 'gene_1', 'gene_2', 'gene_3', 'gene_4' ])
+    var = pd.DataFrame(index = [ 'set_1' ])
+    x = np.array([ [ 1 ], [ 0 ], [ 1 ], [ 0 ] ])
+    return anndata.AnnData(X=x, obs=obs, var=var)
